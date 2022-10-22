@@ -1,11 +1,12 @@
 import jwt from 'jsonwebtoken'
 import mongoose from "mongoose";
+import dotenv  from "dotenv"
 import { EventModel } from '../model/eventModel.js'
 import { ProductModel } from '../model/productModel.js'
 import { SeatModel } from '../model/seatModel.js'
 import { TicketModel } from '../model/ticketModel.js'
 import { UserModel } from '../model/userModel.js'
-
+dotenv.config();
 export const verifyToken= async (req,res,next)=>{
     const token = req.headers.token
     
@@ -16,7 +17,7 @@ export const verifyToken= async (req,res,next)=>{
               return  res.status(403).json("Token is not valid")
             }
             req.user = user;
-            console.log("here")
+          
             next()
         })
     }else{
@@ -25,7 +26,7 @@ export const verifyToken= async (req,res,next)=>{
 }
 export const verifyTokenAndUser= async (req,res,next)=>{
     const token = req.body.accessToken
-    console.log(token)
+
     if(token){
         
         jwt.verify(token,process.env.JWT_ACCESS_KEY,(err,user)=>{
@@ -35,6 +36,34 @@ export const verifyTokenAndUser= async (req,res,next)=>{
             
        
             next()
+        })
+    }else{
+        return res.status(401).json("You're not authenticated")
+    }
+}
+export const verifyTokenAndAdmin= async (req,res,next)=>{
+    const token = req.headers.token
+ 
+    if(token){
+        const accessToken= token.split(" ")[1]
+            
+        jwt.verify(accessToken,process.env.JWT_ACCESS_KEY,(err,user)=>{
+           
+            if(err){
+                console.log(err)
+              return  res.status(403).json("Token is not valid")
+            }
+            if(user.admin=="admin"){
+             req.user=  user     
+            next()
+            }else if(user.admin=="1"){
+                req.user=   user     
+                next()
+            }else{
+
+             return   res.status(403).json("Forbiden")
+            }
+
         })
     }else{
         return res.status(401).json("You're not authenticated")

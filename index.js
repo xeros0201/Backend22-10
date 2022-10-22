@@ -6,7 +6,7 @@ import mongoose from 'mongoose'
 import morgan from 'morgan'
 import cookieParser from 'cookie-parser'
 import dotenv  from "dotenv"
-
+import path from 'path'
 import auth from './routes/auth.js'
 import user from './routes/user.js'
 import gen from './routes/genres.js'
@@ -26,6 +26,9 @@ const database = 'phobendoi'; // REPLACE WITH YOUR DB NAME
 app.listen(PORT,()=>{
     console.log("server is running")
 })
+
+app.use('/uploads/products', express.static('uploads/products'));
+app.use('/uploads/events', express.static('uploads/events'));
 mongoose.connect(`mongodb://${server}/${database}`,
 { useNewUrlParser:true, useUnifiedTopology:true,
 }).then(()=>{
@@ -38,7 +41,7 @@ mongoose.connect(`mongodb://${server}/${database}`,
 app.disable('etag');
 
 app.use(bodyParser.json({limit:"10mb"}));
-app.use(bodyParser.urlencoded({extended:true,limit:"10mb"    }));
+app.use(bodyParser.urlencoded({extended:true,limit:"50mb"    }));
 app.use(cors());
 app.use(morgan("common"));
 app.use(cookieParser())
@@ -58,4 +61,3 @@ app.use("/api/event",events)
 app.use("/api/contact",contact)
 app.use("/api/city",city)
 app.use("/api/bill",bill)
-

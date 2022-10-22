@@ -57,7 +57,7 @@ export const deleteUser= async (req,res)=>{
 }
 export const findUser= async (req,res)=>{
     try {
-            const role = req.body.role
+            const role = req.user.admin
         if(role==="client"){
             return res.status(500).json("You not allow to do this please contact the highest authorization admin for more infomation !")
         }else{
@@ -65,8 +65,9 @@ export const findUser= async (req,res)=>{
             if(role ==="admin" && user.role ==="admin" ){
                 return res.status(500).json("You not allow to do this please contact the highest authorization admin for more infomation !")  
             }
-            if(user.role ==="1"){
-                return res.status(500).json("You not allow to do this please contact the highest authorization admin for more infomation !")
+            if(role ==="1"){
+              if(req.user.id!=user._id&&user.role=="1")   return res.status(500).json("Không thể update super admin khác!")  
+             return res.status(200).json(user)
             }
             res.status(200).json(user)
         }
@@ -209,3 +210,58 @@ export const resetPass = async (req,res) =>{
  
    
 }
+
+export const updateUserInfo = async (req,res)=>{
+
+try {
+  
+   const {id,info} = req.body
+   const userCheck = await UserModel.findById(id)
+   if(!userCheck) return res.status(500).json("User not found !")
+    const user = await UserModel.findByIdAndUpdate(id,info,{new:true})
+    return res.status(200).json(user)
+} catch (error) {
+  return res.status(500).json(error)
+}
+
+}
+export const updatePasswordUserInfo = async (req,res)=>{
+
+  try {
+    
+     const {id} = req.body
+     const  {password }=  req.body
+    const user = await UserModel.findById(id)
+    if(!user) return res.status(500).json("User not found !")
+    const salt = await bcrypt.genSalt(10)
+    const hashed = await bcrypt.hash(password,salt)
+     await UserModel.findByIdAndUpdate(id,{password:hashed},{new:true})
+    
+     res.status(200).json('success')
+  } catch (error) {
+    return res.status(500).json(error)
+  }
+  
+  }
+
+  export const userCheckRePassword = async (req,res)=>{
+
+    try {
+      
+       const {id} = req.body
+       const  {password }=  req.body
+      const user = await UserModel.findById(id)
+
+      if(!user) return res.status(500).json("User not found !")
+      const validPassword = await bcrypt.compare(
+        password,
+        user.password
+    )
+  
+      
+       res.status(200).json(validPassword)
+    } catch (error) {
+      return res.status(500).json(error)
+    }
+    
+    }

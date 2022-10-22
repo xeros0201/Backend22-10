@@ -6,8 +6,12 @@ const schema = new mongoose.Schema({
         type:String,
         required:true,
         unique:true,
-        minlength:4
+        minlength:2
     },
+    status:{
+        type:Boolean,
+        default:true
+    }
 
 },{timestamps:true,writeConcern: {
     w: 'majority',

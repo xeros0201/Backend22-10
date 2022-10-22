@@ -76,6 +76,14 @@ const schema = new mongoose.Schema({
     note:{
       type:String,
 
+    },
+    isVIP:{
+      type:Boolean,
+      default:false
+    },
+    giftcode:{
+      type:String,
+      default:"none"
     }
     
 },{timestamps:true})

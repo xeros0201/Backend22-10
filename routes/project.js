@@ -4,8 +4,8 @@ import { createProject, getAllProject, updateProject } from "../controller/proje
 const router = express.Router()
 
 
-router.post('/update',updateProject)
-router.post('/create',createProject)
+// router.post('/update',updateProject)
+// router.post('/create',createProject)
 router.get('/',getAllProject)
 
 export default router

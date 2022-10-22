@@ -118,11 +118,31 @@ process.env.JWT_ACCESS_KEY,
 {expiresIn:"2h"}
 )
 }
+export const reGenerateAccessToken=  (user)=>{
+
+    return jwt.sign({
+     id: user.id,
+     admin: user.admin
+ },
+ process.env.JWT_ACCESS_KEY,
+ {expiresIn:"2h"}
+ )
+ }
 export const generateRefreshToken=  (user)=>{
 
     return jwt.sign({
      id: user.id,
      admin: user.role
+ },
+ process.env.JWT_REFRESH_KEY,
+ {expiresIn:"365d"} 
+ )
+ }
+ export const reGenerateRefreshToken=  (user)=>{
+
+    return jwt.sign({
+     id: user.id,
+     admin: user.admin
  },
  process.env.JWT_REFRESH_KEY,
  {expiresIn:"365d"} 
@@ -143,8 +163,8 @@ export const generateRefreshToken=  (user)=>{
         }else{
 
 
-            const newAccessToken = generateAccessToken(user)
-            const newRefreshToken = generateRefreshToken(user)
+            const newAccessToken = reGenerateAccessToken(user)
+            const newRefreshToken = reGenerateRefreshToken(user)
            
      
             res.status(200).json({accessToken: newAccessToken , refreshToken:newRefreshToken})

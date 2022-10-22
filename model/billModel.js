@@ -10,12 +10,8 @@ const schema = new mongoose.Schema({
  
     },
     buyer:{
-  
             type:mongoose.Schema.Types.ObjectId,
-       
-
-
-        
+    
     },
     shipmentDetail:{
         fullAdress:{
@@ -52,16 +48,16 @@ const schema = new mongoose.Schema({
     },
     isUseShipmentService:{
         type:Boolean,
-        required:true
+   
     },
     isCOD:{
         // thanh toan khi nhan hang, bao gom ca nhan truc tiep
         type:Boolean,
-        required:true
+    
     },
     shipcode:{
         type:String,
-  
+        default:"none"
     },
     status:{
 

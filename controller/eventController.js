@@ -1,3 +1,5 @@
+import { uploadEvent } from "../middlerware.js/upload.js"
+import { DiscountModel } from "../model/discountModel.js"
 import { EventModel } from "../model/eventModel.js"
 import { ProjectModel } from "../model/project.js"
 import { SeatModel } from "../model/seatModel.js"
@@ -88,18 +90,53 @@ export const createEvent= async (req,res)=>{
 
         return res.status(200).json({"message":"success",event})
     } catch (error) {
+        console.log(error)
         return res.status(500).json({error:error})
     }
 }
-
+export const uploadImage =async (req,res,next)=>{
+    try {
+   
+        const upload =    uploadEvent.single('image') 
+        console.log("here")
+         upload(req,res,(err)=>{
+            if(err){
+                console.log(err)
+                return  res.status(500).json("123")
+            }else{
+                return  res.status(200).json('upload success')
+            }
+         })  
+     
+    } catch (error) {
+        return  res.status(500).json(error)
+    }
+   
+    
+}
  
 
 export const createTicket = async (req,res)=>{
-  try {
+  try { 
+
+
+
+
         const newTicket = req.body
       
         const ticket  =  new TicketModel(newTicket)
         await ticket.save()
+        if(ticket.giftcode==="none"){
+          
+        }else{
+          
+            const gift = await DiscountModel.findOne({"name":ticket.giftcode})
+           
+            await DiscountModel.findByIdAndUpdate(gift._id,{
+                $inc:{"number":-1},
+                $push:{"userUsed":ticket.buyerInfo}
+            })
+        }
         if(newTicket.isOnlinePayment){
          await EventModel.findByIdAndUpdate({
             "_id":newTicket.eventInfo

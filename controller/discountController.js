@@ -1,6 +1,7 @@
 import { DiscountModel } from "../model/discountModel.js"
 import jwt from 'jsonwebtoken'
 import dotenv  from "dotenv"
+import { EventModel } from "../model/eventModel.js"
 dotenv.config()
 
 
@@ -62,9 +63,33 @@ export const updateDiscount1 = async (req,res)=>{
         if(Discount.length===0){
             return res.status(410).json("Code bạn nhập không đúng hoặc đã hết hạn xin vui lòng thử lại !")
         }
-       
+        if(Discount.forWhat==="event") return  res.status(400).json("Code bạn nhập không dành cho Product!")
         return res.status(200).json(Discount)
     } catch (error) {
+        return res.status(500).json(error)
+    }
+}
+export const checkEventDiscount = async (req,res)=>{
+    try {
+        
+        const updateDiscount = req.body 
+     
+        let  theDate = new Date()
+      
+        const Discount = await DiscountModel.find({"name":updateDiscount.name,"endDate":{ $gte :  theDate},"startDate":{$lt:theDate},"number":{$gt:0}})
+    
+        if(Discount.length===0){
+            return res.status(410).json("Code bạn nhập không đúng hoặc chưa được kích hoạt hoặc đã hết hạn xin vui lòng thử lại !")
+        }
+        if(Discount.forWhat==="product") return  res.status(400).json("Code bạn nhập không dành cho Event!")
+        const eventCheck = await EventModel.findById(req.body.eventInfo)
+      
+        const check = eventCheck.giftCode.filter(item=>item===Discount._id)
+        if(!check) return  res.status(400).json("Code bạn nhập không dành cho sự kiện lần này !")
+
+        return res.status(200).json(Discount)
+    } catch (error) {
+      
         return res.status(500).json(error)
     }
 }

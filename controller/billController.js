@@ -9,9 +9,10 @@ export const createBill= async (req,res)=>{
 
     try {
       
-   
+      
         const newBill = req.body
         if(!newBill.discount){
+            console.log(newBill)
             const bill = await new BillModel(newBill)
             await bill.save()
             return   res.status(200).json(bill)
@@ -57,6 +58,21 @@ export const getAllBillByUser = async(req,res)=>{
         return res.status(200).json(bills)
     } catch (error) {
         return res.status(500).json({error:error})
+    }
+}
+
+export const updateBill = async (req,res) =>{
+    try {
+        const {id} = req.query
+        const newBill = req.body
+        const bill = await BillModel.findById(id)
+        if(!bill) return res.status(400).json("Không tìm thấy bill này")
+        if(!newBill) return res.status(402).json("Không thấy dữ liệu")
+        
+        const updateBill = await BillModel.findByIdAndUpdate(id,{status:newBill.status},{new:true})
+        return res.status(200).json(updateBill)
+    } catch (error) {
+        res.status(500).json(error)
     }
 }
 

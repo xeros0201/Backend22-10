@@ -1,4 +1,6 @@
+import { uploadProduct } from "../middlerware.js/upload.js"
 import { CartModel } from "../model/cartModel.js"
+import { ImagesModel } from "../model/imagesModel.js"
 import { ProductModel } from "../model/productModel.js"
 import { UserModel } from "../model/userModel.js"
 
@@ -49,14 +51,62 @@ export const getProduct= async (req,res)=>{
       return  res.status(500).json({error:error})
     }
 }
+export const getProduct_admin= async (req,res)=>{
+    try {
+      
+        const products = await ProductModel.find().populate('genres')
+     
+        return  res.status(200).json(products)
+    } catch (error) {
+      return  res.status(500).json({error:error})
+    }
+}
+export const getAllProductImage = async (req,res)=>{
+    try {
+        const data = await ImagesModel.find({type:'product'})
+        res.status(200).json(data)
+    } catch (error) {
+        res.status(500).json(error)
+    }
+}
+export const uploadImage =async (req,res,next)=>{
+    try {
+       
+        const upload =    uploadProduct.single('image') 
+         upload(req,res,(err)=>{
+            if(err){
+                return  res.status(500).json(err)
+            }else{
+                return  res.status(200).json('upload success')
+            }
+         })  
+     
+    } catch (error) {
+        return  res.status(500).json(error)
+    }
+   
+    
+}
 export const createProduct= async (req,res)=>{
     
     try {
         const newProduct = req.body
         
-        const product = new ProductModel(newProduct)
+        const product = new ProductModel({
+            name:newProduct.name,
+            productCode:newProduct.productCode,
+            genres:newProduct.genres,
+            pics:newProduct.pics,
+            discription:newProduct.discription,
+            moreInfo:newProduct.moreInfo,
+            option:newProduct.option,
+            isNewest:newProduct.isNewest,
+            isBestSeller:newProduct.isBestSeller,
+            isPreOrder:newProduct.isPreOrder,
+            isHidden:newProduct.isHidden,
+        })
         await product.save()
-
+        
         return res.status(200).json(product)
     } catch (error) {
         return res.status(500).json({error:error})
@@ -66,14 +116,15 @@ export const createProduct= async (req,res)=>{
 export const updateProduct = async (req,res)=>{
     try {
         const updateProduct = req.body
-
-        const product = await ProductModel.findOneAndUpdate({
-            _id:updateProduct._id
+        const id = req.params.id
+        const product = await ProductModel.findByIdAndUpdate({
+            _id:id
         },updateProduct,{new:true})
         
-
+            console.log(product)
         return  res.status(200).json(product)
     } catch (error) {
+       
         return   res.status(500).json({error:error})
     }
 }
@@ -115,46 +166,47 @@ export const searchProduct =async (req,res)=>{
        
         const searchText= req.query.search
         const cateID = req.query.cateID
-     
+        
         const finfItem = await ProductModel.aggregate([
             {
-                "$search":{
-                    "index": 'productSearch',
-                    // "embeddedDocument": {
-                    //     "path": "genres",
-                    //     "operator": {
-                    //       "compound": {
-                    //         "should": [{
-                    //           "text": {
-                    //             "path": "genres.name",
-                    //             "query": searchText
-                    //           }
-                    //         }],
+                // "$search":{
+                //     "index": 'productSearch',
+                //     // "embeddedDocument": {
+                //     //     "path": "genres",
+                //     //     "operator": {
+                //     //       "compound": {
+                //     //         "should": [{
+                //     //           "text": {
+                //     //             "path": "genres.name",
+                //     //             "query": searchText
+                //     //           }
+                //     //         }],
                         
-                    //       }
-                    //     }},
-                        // "equals": {
-                        //     "path": "genres",
-                        //     "value": new ObjectId(`${searchText}`)
-                        //   },
+                //     //       }
+                //     //     }},
+                //         // "equals": {
+                //         //     "path": "genres",
+                //         //     "value": new ObjectId(`${searchText}`)
+                //         //   },
                    
-                    "compound":{
+                //     "compound":{
                 
-                        "should":[
-                            {
-                                "autocomplete":{
-                                "query": `${searchText}`,
-                                "path":"name",
-                                "fuzzy":{
-                                    "maxEdits":1
-                                }
-                            }
-                            },
+                //         "should":[
+                //             {
+                //                 "autocomplete":{
+                //                 "query": `${searchText}`,
+                //                 "path":"name",
+                //                 "fuzzy":{
+                //                     "maxEdits":1
+                //                 }
+                //             }
+                //             },
                    
-                        ]
+                //         ]
 
-                    }
-                }
+                //     }
+                // }
+                 $text: { $search: searchText } 
             },
          
         ])
@@ -176,6 +228,34 @@ export const searchProduct =async (req,res)=>{
         const newList = finfItem.filter(item=>item.genres.toString().includes(cateID))
 
         return res.status(200).json(newList)
+      
+    } catch (error) {
+        return res.status(500).json({error:error})
+    }
+}
+export const searchProductAdmin =async (req,res)=>{
+   
+    try {
+       
+        const searchText= req.query.search
+    
+        if(!searchText){ 
+            
+            const products = await ProductModel.find().populate('genres')
+            return res.status(200).json(products)
+            
+        }
+        const finfItem = await ProductModel.find({
+          
+                 $text: { $search: searchText } 
+            }).populate('genres')
+  
+
+        
+  
+       
+
+        return res.status(200).json(finfItem)
       
     } catch (error) {
         return res.status(500).json({error:error})

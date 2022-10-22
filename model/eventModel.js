@@ -29,7 +29,7 @@ const schema = new mongoose.Schema({
     //     type:[String]
     // },
     discription:{
-        type:[String]
+        type: mongoose.Schema.Types.Mixed
     },
     eventStatus:{
         
@@ -158,6 +158,11 @@ const schema = new mongoose.Schema({
             type:Boolean,
             default:true
         },
+    
+     }
+     ,
+     giftCode:{
+        type:[String],
     
      }
 
